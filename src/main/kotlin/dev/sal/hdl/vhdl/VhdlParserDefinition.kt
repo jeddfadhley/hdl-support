@@ -1,6 +1,5 @@
 package dev.sal.hdl.vhdl
 
-import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -11,13 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import dev.sal.hdl.psi.FlatPsiParser
+import dev.sal.hdl.vhdl.psi.VhdlElementTypes
+import dev.sal.hdl.vhdl.psi.VhdlParser
 
-/** Builds a flat PSI tree (see [FlatPsiParser]) so the commenter and lint annotator have a file to work on. */
+/** Builds the VHDL PSI tree used by the structure view, folding, navigation and keyword matching. */
 class VhdlParserDefinition : ParserDefinition {
     override fun createLexer(project: Project?): Lexer = VhdlLexerAdapter()
 
-    override fun createParser(project: Project?): PsiParser = FlatPsiParser()
+    override fun createParser(project: Project?): PsiParser = VhdlParser()
 
     override fun getFileNodeType(): IFileElementType = VhdlTokenTypes.FILE
 
@@ -25,7 +25,7 @@ class VhdlParserDefinition : ParserDefinition {
 
     override fun getStringLiteralElements(): TokenSet = VhdlTokenTypes.STRINGS
 
-    override fun createElement(node: ASTNode): PsiElement = ASTWrapperPsiElement(node)
+    override fun createElement(node: ASTNode): PsiElement = VhdlElementTypes.createElement(node)
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile = VhdlFile(viewProvider)
 }

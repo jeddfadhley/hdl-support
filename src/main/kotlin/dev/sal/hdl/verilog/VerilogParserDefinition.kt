@@ -1,6 +1,5 @@
 package dev.sal.hdl.verilog
 
-import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.lang.ParserDefinition
 import com.intellij.lang.PsiParser
@@ -11,13 +10,14 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
-import dev.sal.hdl.psi.FlatPsiParser
+import dev.sal.hdl.verilog.psi.VerilogElementTypes
+import dev.sal.hdl.verilog.psi.VerilogParser
 
-/** Builds a flat PSI tree (see [FlatPsiParser]) so the commenter and lint annotator have a file to work on. */
+/** Builds the Verilog PSI tree used by the structure view, folding, navigation and keyword matching. */
 class VerilogParserDefinition : ParserDefinition {
     override fun createLexer(project: Project?): Lexer = VerilogLexerAdapter()
 
-    override fun createParser(project: Project?): PsiParser = FlatPsiParser()
+    override fun createParser(project: Project?): PsiParser = VerilogParser()
 
     override fun getFileNodeType(): IFileElementType = VerilogTokenTypes.FILE
 
@@ -25,7 +25,7 @@ class VerilogParserDefinition : ParserDefinition {
 
     override fun getStringLiteralElements(): TokenSet = VerilogTokenTypes.STRINGS
 
-    override fun createElement(node: ASTNode): PsiElement = ASTWrapperPsiElement(node)
+    override fun createElement(node: ASTNode): PsiElement = VerilogElementTypes.createElement(node)
 
     override fun createFile(viewProvider: FileViewProvider): PsiFile = VerilogFile(viewProvider)
 }
