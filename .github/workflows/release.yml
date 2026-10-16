@@ -1,0 +1,53 @@
+# Publishes a release when a version tag (e.g. v0.2.0) is pushed:
+# signs the plugin, uploads it to the JetBrains Marketplace, and creates a GitHub release.
+#
+# Needs these repository secrets (see "Releasing" in CLAUDE.md):
+#   PUBLISH_TOKEN                                       - JetBrains Marketplace token
+#   CERTIFICATE_CHAIN, PRIVATE_KEY, PRIVATE_KEY_PASSWORD - plugin signing key
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check the tag matches gradle.properties
+        run: |
+          VERSION=$(grep '^version' gradle.properties | cut -d= -f2 | tr -d ' ')
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME doesn't match version $VERSION in gradle.properties"
+            exit 1
+          fi
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Sign and publish to JetBrains Marketplace
+        env:
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew publishPlugin
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/distributions/*-signed.zip \
+            --title "$GITHUB_REF_NAME" \
+            --notes "$(./gradlew -q getChangelog --no-header --console=plain)"

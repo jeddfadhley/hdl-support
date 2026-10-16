@@ -1,3 +1,5 @@
+import org.jetbrains.changelog.Changelog
+import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.grammarkit.tasks.GenerateLexerTask
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
@@ -5,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm")
     id("org.jetbrains.intellij.platform")
     id("org.jetbrains.grammarkit")
+    id("org.jetbrains.changelog")
 }
 
 group = providers.gradleProperty("group").get()
@@ -74,11 +77,48 @@ dependencies {
 
 intellijPlatform {
     pluginConfiguration {
+        // The Marketplace description is the part of README.md between the "Plugin description" markers.
+        description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
+            val start = "<!-- Plugin description -->"
+            val end = "<!-- Plugin description end -->"
+            with(it.lines()) {
+                if (!containsAll(listOf(start, end))) {
+                    throw GradleException("Plugin description section not found in README.md:\n$start ... $end")
+                }
+                subList(indexOf(start) + 1, indexOf(end)).joinToString("\n").let(::markdownToHTML)
+            }
+        }
+
+        // The change notes are the CHANGELOG.md section for this version, or "Unreleased" if there isn't one.
+        val changelog = project.changelog
+        changeNotes = providers.gradleProperty("version").map { pluginVersion ->
+            with(changelog) {
+                renderItem(
+                    (getOrNull(pluginVersion) ?: getUnreleased())
+                        .withHeader(false)
+                        .withEmptySections(false),
+                    Changelog.OutputType.HTML,
+                )
+            }
+        }
+
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
             untilBuild = provider { null }
         }
     }
+    // Release signing and publishing read their secrets from environment variables (GitHub Actions
+    // secrets in CI). See "Releasing" in CLAUDE.md.
+    signing {
+        certificateChain = providers.environmentVariable("CERTIFICATE_CHAIN")
+        privateKey = providers.environmentVariable("PRIVATE_KEY")
+        password = providers.environmentVariable("PRIVATE_KEY_PASSWORD")
+    }
+
+    publishing {
+        token = providers.environmentVariable("PUBLISH_TOKEN")
+    }
+
     pluginVerification {
         ides {
             recommended()
@@ -86,7 +126,21 @@ intellijPlatform {
     }
 }
 
+changelog {
+    groups.empty()
+    repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
+}
+
 // Open the sample HDL files in the sandbox IDE, so there's something to look at straight away.
+// It opens a fresh copy under build/, so edits made while trying things out can't change the test data.
+val prepareSampleProject by tasks.registering(Sync::class) {
+    from("src/test/testData") {
+        exclude("**/*.txt")
+    }
+    into(layout.buildDirectory.dir("sample-project"))
+}
+
 tasks.runIde {
-    args(layout.projectDirectory.dir("src/test/testData").asFile.absolutePath)
+    dependsOn(prepareSampleProject)
+    args(layout.buildDirectory.dir("sample-project").get().asFile.absolutePath)
 }

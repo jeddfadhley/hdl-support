@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
+  <rect x="2" y="2" width="36" height="36" rx="6" fill="#548AF7"/>
+  <!-- A square-wave signal: the classic HDL motif -->
+  <path d="M7 27 H13 V13 H20 V27 H27 V13 H33" fill="none" stroke="#FFFFFF" stroke-width="3"
+        stroke-linejoin="round" stroke-linecap="round"/>
+</svg>

@@ -24,6 +24,10 @@ This is a personal tool and a learning project. Prefer clear, well-commented cod
 ```
 .
 ├── CLAUDE.md
+├── README.md
+├── CHANGELOG.md
+├── LICENSE
+├── .github/workflows/      (build.yml: CI; release.yml: publish on v* tags)
 ├── build.gradle.kts
 ├── gradle.properties
 ├── settings.gradle.kts
@@ -140,7 +144,7 @@ Work through these in order. Each milestone should build, pass its tests, and be
 
 | Task | Command |
 |---|---|
-| Run sandbox IDE with plugin | `./gradlew runIde` |
+| Run sandbox IDE with plugin | `./gradlew runIde` (opens a throwaway copy of the test data from `build/sample-project`) |
 | Run tests | `./gradlew test` |
 | Regenerate lexers | `./gradlew generateLexers` (runs `generateVerilogLexer` and `generateVhdlLexer`; output goes to `build/generated/lexer`. Compilation runs this automatically.) |
 | Build installable zip | `./gradlew buildPlugin` → `build/distributions/*.zip` |
@@ -151,6 +155,23 @@ Install locally via **Settings → Plugins → ⚙ → Install Plugin from Disk*
 Build notes:
 - Repositories are declared in `build.gradle.kts`, not `settings.gradle.kts`, because the Grammar-Kit plugin adds project-level repositories, and Gradle then ignores any declared in settings.
 - JFlex's `%ignorecase` applies to quoted strings but **not** to character classes. In `Vhdl.flex`, write classes with both cases, e.g. `[a-zA-Z]`.
+
+## Releasing
+
+The project is MIT-licensed open source (`LICENSE`).
+
+- **Plugin ID:** `io.github.jeddfadhley.hdl` in `plugin.xml`. It's permanent once uploaded to the Marketplace, so never change it. Kotlin packages (`dev.sal.hdl`) are separate and can stay as they are.
+- **Marketplace description** comes from the part of `README.md` between `<!-- Plugin description -->` and `<!-- Plugin description end -->`. Edit it there, not in `plugin.xml`.
+- **Change notes** come from `CHANGELOG.md`: the section matching `version` in `gradle.properties`, or `[Unreleased]`.
+- **Icon:** `src/main/resources/META-INF/pluginIcon.svg` (40×40) and `pluginIcon_dark.svg`.
+- **CI:** `.github/workflows/build.yml` runs tests, `buildPlugin` and `verifyPlugin` on every push and PR.
+
+To cut a release:
+1. Add the changes under `## [Unreleased]` in `CHANGELOG.md`, bump `version` in `gradle.properties`, then run `./gradlew patchChangelog` (it moves Unreleased to the new version).
+2. Commit, then tag `v<version>` and push the tag. `.github/workflows/release.yml` checks the tag matches the version, signs the plugin, runs `publishPlugin` and creates a GitHub release with the signed zip.
+3. Repository secrets needed: `PUBLISH_TOKEN` (Marketplace → profile → My Tokens), and `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, `PRIVATE_KEY_PASSWORD` (see https://plugins.jetbrains.com/docs/intellij/plugin-signing.html).
+
+The very first Marketplace upload must be done by hand on plugins.jetbrains.com. Only later versions can go through `publishPlugin`.
 
 ## Testing
 

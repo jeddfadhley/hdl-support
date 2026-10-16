@@ -1,0 +1,74 @@
+# Runs on every push and pull request: tests, plugin build, and compatibility checks.
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # Optional: lets LintAnnotatorIntegrationTest run the real tools. The tests pass without them.
+      - name: Install Verilator and GHDL
+        run: sudo apt-get update && sudo apt-get install -y verilator ghdl || true
+
+      - name: Test
+        run: ./gradlew test
+
+      - name: Build plugin
+        run: ./gradlew buildPlugin verifyPluginStructure verifyPluginProjectConfiguration
+
+      - name: Upload plugin zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: build/distributions/*.zip
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: build/reports/tests
+
+  verify:
+    # Downloads several IDE versions, so it runs as a separate job.
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Free disk space for IDE downloads
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+
+      - name: Verify plugin against recommended IDEs
+        run: ./gradlew verifyPlugin
+
+      - name: Upload verifier report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verifier-report
+          path: build/reports/pluginVerifier

@@ -1,17 +1,9 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <id>dev.sal.hdl</id>
+    <!-- Permanent Marketplace ID. Never change it after the first upload. -->
+    <id>io.github.jeddfadhley.hdl</id>
     <name>HDL Support</name>
-    <vendor>Sal</vendor>
-    <description><![CDATA[
-        <p>Free Verilog, SystemVerilog and VHDL support for IntelliJ-based IDEs.</p>
-        <ul>
-            <li>Syntax highlighting that follows your colour scheme</li>
-            <li>Line and block commenting</li>
-            <li>Lint warnings and errors from Verilator (Verilog/SystemVerilog) and GHDL (VHDL), if installed</li>
-        </ul>
-        <p>Configure the linters under <b>Settings | Tools | HDL Support</b>.</p>
-    ]]></description>
+    <vendor url="https://github.com/jeddfadhley/hdl-support">jeddfadhley</vendor>
 
     <depends>com.intellij.modules.platform</depends>
 
