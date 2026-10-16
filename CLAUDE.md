@@ -6,7 +6,8 @@ A free IntelliJ Platform plugin that adds:
 
 1. **Syntax highlighting** for Verilog, SystemVerilog and VHDL (the main goal).
 2. **Lint squiggles** from Verilator (Verilog/SV) and GHDL (VHDL), run on save.
-3. Later, possibly: a structure view, brace matching, commenting and go-to-definition for modules/entities.
+3. An outline parser with PSI, giving a structure view, folding, `begin`/`end` matching and go-to-definition for modules/entities.
+4. A Yosys "Show Synthesis Stats" action.
 
 This is a personal tool and a learning project. Prefer clear, well-commented code over clever code.
 
@@ -17,7 +18,7 @@ This is a personal tool and a learning project. Prefer clear, well-commented cod
 - **Plugin tooling:** IntelliJ Platform Gradle Plugin 2.x and the Grammar-Kit Gradle plugin (`org.jetbrains.grammarkit`) for JFlex lexer generation.
 - **Target IDE:** IntelliJ IDEA (free tier). Keep the platform version in `gradle.properties`. Don't hardcode it elsewhere. Currently built against 2025.3 (the first unified IDEA release), `sinceBuild` 253, no upper bound.
 - **JDK:** Gradle and the build need JDK 21 (`kotlin { jvmToolchain(21) }`). Run Gradle with `JAVA_HOME` set to a JDK 21, e.g. `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` on macOS.
-- **External tools (runtime, optional):** `verilator`, `ghdl`. The plugin must still work, with colouring only, when these aren't installed.
+- **External tools (runtime, optional):** `verilator`, `ghdl`, `yosys`. The plugin must still work, with colouring only, when these aren't installed.
 
 ## Repository layout
 
@@ -39,19 +40,41 @@ This is a personal tool and a learning project. Prefer clear, well-commented cod
     │   ├── kotlin/dev/sal/hdl/
     │   │   ├── HdlIcons.kt
     │   │   ├── psi/
-    │   │   │   └── FlatPsiParser.kt       (no grammar yet: every token sits directly under the file node)
+    │   │   │   ├── HdlParsing.kt          (shared parser helpers: lookahead, bracket skipping)
+    │   │   │   └── HdlPsiUtil.kt          (HdlKeywordBlock interface, PSI helpers)
     │   │   ├── verilog/
     │   │   │   ├── VerilogLanguage.kt
     │   │   │   ├── VerilogFileType.kt
     │   │   │   ├── VerilogFile.kt
-    │   │   │   ├── VerilogParserDefinition.kt  (needed so commenters/annotators get a PSI file)
+    │   │   │   ├── VerilogParserDefinition.kt
     │   │   │   ├── VerilogTokenTypes.kt
     │   │   │   ├── VerilogLexerAdapter.kt
     │   │   │   ├── VerilogSyntaxHighlighter.kt
     │   │   │   ├── VerilogSyntaxHighlighterFactory.kt
     │   │   │   ├── VerilogColorSettingsPage.kt
-    │   │   │   └── VerilogCommenter.kt
+    │   │   │   ├── VerilogCommenter.kt
+    │   │   │   ├── VerilogStructureViewFactory.kt
+    │   │   │   ├── VerilogFoldingBuilder.kt
+    │   │   │   ├── VerilogBraceMatcher.kt
+    │   │   │   └── psi/
+    │   │   │       ├── VerilogElementTypes.kt
+    │   │   │       ├── VerilogParser.kt       (outline parser, see "Parsers" below)
+    │   │   │       └── VerilogPsi.kt          (design units, ports, declarations, instances, ...)
     │   │   ├── vhdl/            (mirror of verilog/)
+    │   │   ├── structure/
+    │   │   │   └── HdlStructureView.kt    (shared structure view; each language supplies an HdlStructureSpec)
+    │   │   ├── folding/
+    │   │   │   └── HdlFoldingBuilder.kt   (shared folding over HdlKeywordBlock elements)
+    │   │   ├── editor/
+    │   │   │   └── HdlCodeBlockSupportHandler.kt  (begin/end keyword matching for both languages)
+    │   │   ├── navigation/
+    │   │   │   ├── HdlUnitIndex.kt        (file-based index: design unit name → files)
+    │   │   │   └── HdlUnits.kt            (unit lookup and HdlUnitReference for go-to-definition)
+    │   │   ├── yosys/
+    │   │   │   ├── ShowSynthesisStatsAction.kt
+    │   │   │   ├── YosysScript.kt
+    │   │   │   ├── YosysRunner.kt         (runs Yosys into a tab of the Yosys tool window)
+    │   │   │   └── YosysToolWindowFactory.kt
     │   │   ├── lint/
     │   │   │   ├── LintMessage.kt
     │   │   │   ├── HdlLintAnnotator.kt    (shared ExternalAnnotator: temp copy, process, timeout, apply)
@@ -134,11 +157,20 @@ Work through these in order. Each milestone should build, pass its tests, and be
   - a GHDL `--std` dropdown (93 / 08)
 - Persist these with `PersistentStateComponent`.
 
-### Stretch goals (only when asked)
-- Brace matching for `begin`/`end` and `module`/`endmodule` (may need a parser).
-- A Grammar-Kit `.bnf` parser with PSI, enabling a structure view (modules, ports, always blocks) and go-to-definition for module instantiations.
-- Code folding for `module`, `always`, `process` and `generate` blocks.
-- A Yosys action: "Show synthesis stats for this module" (`yosys -p "read_verilog <f>; synth; stat"`), with the output shown in a tool window.
+### Stretch goals (done)
+- Brace matching for `()`/`[]`/`{}`, and keyword matching for `begin`/`end`, `module`/`endmodule`, `if`/`elsif`/`else`/`end if` and so on (`HdlCodeBlockSupportHandler`).
+- An outline parser with PSI, enabling a structure view (modules, ports, signals, always blocks, instances) and go-to-definition for module instantiations, architectures, imports and use clauses.
+- Code folding for modules, entities, `always`, `process`, `generate`, `begin`/`end` and other keyword blocks, port lists and block comments.
+- A Yosys action, **Tools → Show Synthesis Stats**: `yosys -p "read_verilog -sv <f>; hierarchy -check -top <m> -libdir .; synth -top <m>; stat"`, with the output in a Yosys tool window.
+
+### Parsers
+
+The parsers are hand-written `PsiBuilder` parsers (`VerilogParser.kt`, `VhdlParser.kt`), not Grammar-Kit `.bnf` grammars. The lexers return every keyword as one `KEYWORD` token, so a BNF grammar would need a token type per keyword, and these parsers have to cope with half-typed code. They are *outline* parsers:
+
+- They build nodes only for constructs the IDE features use (design units, ports, declarations, instances, processes, subprograms, keyword blocks) and skip other statements up to their `;`.
+- They **never report errors**. A `PsiErrorElement` would show as a red mark; real errors come from Verilator and GHDL.
+- Recovery: each construct records the end keywords it expects. An end keyword that belongs to an enclosing construct closes the inner ones early, so a missing `end` doesn't swallow the rest of the file.
+- Names aren't wrapped in nodes. The PSI classes work them out from their tokens (`VerilogDeclaration.names`, `VhdlInterfaceDeclaration.names`).
 
 ## Commands
 
@@ -186,7 +218,9 @@ The very first Marketplace upload must be done by hand on plugins.jetbrains.com.
   - VHDL keywords in mixed case (`ENTITY`, `Entity`)
   - Verilog escaped identifiers
   - sized numbers containing `x`/`z`/`_`
-- **Annotator tests:** unit-test the output parsers against captured Verilator/GHDL output strings. Don't require the tools to be installed for `./gradlew test` to pass. `LintAnnotatorIntegrationTest` runs the real tools end to end and quietly passes when a tool is missing.
+- **Parser tests:** extend `HdlParsingTestCase`. File tests compare against `<name>.psi.txt` dumps next to the sample file; review a new dump by hand, as with lexer dumps. `assertTree` checks short snippets inline. Every recovery rule needs a test, and the parser must never produce a `PsiErrorElement` or lose text (both checked automatically).
+- **Feature tests:** `HdlStructureViewTest`, `HdlFoldingTest`, `HdlBraceMatchingTest` and `HdlNavigationTest` are fixture tests with the expected result written inline.
+- **Annotator tests:** unit-test the output parsers against captured Verilator/GHDL output strings. Don't require the tools to be installed for `./gradlew test` to pass. `LintAnnotatorIntegrationTest` runs the real tools end to end and quietly passes when a tool is missing. `YosysTest` does the same for Yosys.
 
 ## Conventions
 
