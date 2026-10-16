@@ -1,0 +1,23 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>dev.sal.hdl</id>
+    <name>HDL Support</name>
+    <vendor>Sal</vendor>
+    <description><![CDATA[
+        <p>Free Verilog, SystemVerilog and VHDL support for IntelliJ-based IDEs.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- ===== Verilog / SystemVerilog ===== -->
+        <!-- File type for .v, .vh, .sv and .svh -->
+        <fileType name="Verilog/SystemVerilog" implementationClass="dev.sal.hdl.verilog.VerilogFileType"
+                  fieldName="INSTANCE" language="HDL.Verilog" extensions="v;vh;sv;svh"/>
+
+        <!-- ===== VHDL ===== -->
+        <!-- File type for .vhd and .vhdl -->
+        <fileType name="VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlFileType"
+                  fieldName="INSTANCE" language="HDL.VHDL" extensions="vhd;vhdl"/>
+    </extensions>
+</idea-plugin>
