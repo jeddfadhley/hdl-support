@@ -33,5 +33,14 @@
         <!-- File type for .vhd and .vhdl -->
         <fileType name="VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlFileType"
                   fieldName="INSTANCE" language="HDL.VHDL" extensions="vhd;vhdl"/>
+        <!-- Lexer plus a flat PSI tree, so commenters and annotators have something to run on -->
+        <lang.parserDefinition language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlParserDefinition"/>
+        <!-- Token-based syntax highlighting -->
+        <lang.syntaxHighlighterFactory language="HDL.VHDL"
+                                       implementationClass="dev.sal.hdl.vhdl.VhdlSyntaxHighlighterFactory"/>
+        <!-- Settings | Editor | Color Scheme | VHDL -->
+        <colorSettingsPage implementation="dev.sal.hdl.vhdl.VhdlColorSettingsPage"/>
+        <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
+        <lang.commenter language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlCommenter"/>
     </extensions>
 </idea-plugin>
