@@ -9,6 +9,12 @@ import dev.sal.hdl.psi.HdlParsing
 import dev.sal.hdl.vhdl.VhdlTokenTypes as T
 import dev.sal.hdl.vhdl.psi.VhdlElementTypes as E
 
+/** Keywords that can follow `end`, saying what it closes: `end if`, `end package body` (IEEE 1076-2008). */
+internal val END_TRAILERS = setOf(
+    "entity", "architecture", "package", "body", "configuration", "context", "component", "record", "units",
+    "protected", "process", "postponed", "block", "generate", "if", "case", "loop", "function", "procedure", "for",
+)
+
 /** Builds the VHDL PSI tree. See [VhdlParsing] for what it recognises. */
 class VhdlParser : PsiParser {
     override fun parse(root: IElementType, builder: PsiBuilder): ASTNode {
@@ -573,13 +579,6 @@ internal class VhdlParsing(builder: PsiBuilder) :
         val CLOSERS = TokenSet.create(T.RPAREN, T.RBRACKET)
 
         // Keyword groups from IEEE 1076-2008.
-
-        /** Keywords that can follow `end`. */
-        val END_TRAILERS = setOf(
-            "entity", "architecture", "package", "body", "configuration", "context", "component", "record",
-            "units", "protected", "process", "postponed", "block", "generate", "if", "case", "loop", "function",
-            "procedure", "for",
-        )
 
         /** Keywords that end the header of `if`, `case` and `for`, telling generate statements from sequential ones. */
         val HEADER_ENDS = setOf("generate", "then", "is", "loop")

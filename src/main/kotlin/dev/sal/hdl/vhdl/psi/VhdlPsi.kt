@@ -29,12 +29,6 @@ private val NAMES = TokenSet.create(T.IDENTIFIER, T.EXTENDED_IDENTIFIER)
 private val OPENERS = TokenSet.create(T.LPAREN, T.LBRACKET)
 private val CLOSERS = TokenSet.create(T.RPAREN, T.RBRACKET)
 
-/** Keywords that can follow `end`. Must match the parser's list. */
-private val END_TRAILERS = setOf(
-    "entity", "architecture", "package", "body", "configuration", "context", "component", "record", "units",
-    "protected", "process", "postponed", "block", "generate", "if", "case", "loop", "function", "procedure", "for",
-)
-
 private fun PsiElement.isKeyword(): Boolean = elementType == T.KEYWORD
 
 private fun PsiElement.isKeyword(word: String): Boolean = isKeyword() && text.equals(word, ignoreCase = true)

@@ -1,20 +1,23 @@
 package dev.sal.hdl.structure
 
+import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.structureView.StructureViewBuilder
 import com.intellij.ide.structureView.StructureViewModel
 import com.intellij.ide.structureView.StructureViewModelBase
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.ide.structureView.TreeBasedStructureViewBuilder
-import com.intellij.ide.structureView.impl.common.PsiTreeElementBase
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement
 import com.intellij.ide.util.treeView.smartTree.Sorter
+import com.intellij.ide.util.treeView.smartTree.TreeElement
 import com.intellij.lang.PsiStructureViewFactory
 import com.intellij.navigation.ItemPresentation
 import com.intellij.navigation.NavigationItem
 import com.intellij.openapi.editor.Editor
+import com.intellij.pom.Navigatable
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import javax.swing.Icon
+import com.intellij.psi.SmartPointerManager
+import com.intellij.util.PsiNavigateUtil
 
 /**
  * What the structure view shows for one language. The tree's values are PSI elements: design units,
@@ -58,20 +61,39 @@ class HdlStructureViewModel(file: PsiFile, editor: Editor?, private val spec: Hd
     override fun isAlwaysLeaf(element: StructureViewTreeElement): Boolean = false
 }
 
+/**
+ * One node of the tree. It implements the tree interfaces directly rather than extending
+ * PsiTreeElementBase, which plugins can't use in IDE versions from 2026.2.
+ */
 class HdlStructureViewElement(element: PsiElement, private val spec: HdlStructureSpec) :
-    PsiTreeElementBase<PsiElement>(element), SortableTreeElement {
+    StructureViewTreeElement, SortableTreeElement {
 
-    // Not named `presentation`: PsiTreeElementBase already has getPresentation(), which returns this element.
-    private fun specPresentation(): ItemPresentation? = element?.let(spec::presentation)
+    // A smart pointer survives reparsing, and returns null once the element is gone.
+    private val pointer = SmartPointerManager.createPointer(element)
 
-    override fun getChildrenBase(): Collection<StructureViewTreeElement> =
-        element?.let { spec.children(it).map { child -> HdlStructureViewElement(child, spec) } }.orEmpty()
+    private val element: PsiElement? get() = pointer.element
 
-    override fun getPresentableText(): String? = specPresentation()?.presentableText
+    override fun getValue(): Any? = element
 
-    override fun getLocationString(): String? = specPresentation()?.locationString
+    override fun getPresentation(): ItemPresentation = element?.let(spec::presentation) ?: PresentationData()
 
-    override fun getIcon(open: Boolean): Icon? = specPresentation()?.getIcon(open)
+    override fun getChildren(): Array<TreeElement> =
+        element?.let { spec.children(it).map { child -> HdlStructureViewElement(child, spec) } }
+            .orEmpty()
+            .toTypedArray()
 
-    override fun getAlphaSortKey(): String = presentableText.orEmpty()
+    override fun navigate(requestFocus: Boolean) {
+        element?.let { PsiNavigateUtil.navigate(it, requestFocus) }
+    }
+
+    override fun canNavigate(): Boolean = (element as? Navigatable)?.canNavigate() == true
+
+    override fun canNavigateToSource(): Boolean = (element as? Navigatable)?.canNavigateToSource() == true
+
+    override fun getAlphaSortKey(): String = presentation.presentableText.orEmpty()
+
+    // The tree matches nodes across updates by equality, so compare the elements they show.
+    override fun equals(other: Any?): Boolean = other is HdlStructureViewElement && other.element == element
+
+    override fun hashCode(): Int = element?.hashCode() ?: 0
 }

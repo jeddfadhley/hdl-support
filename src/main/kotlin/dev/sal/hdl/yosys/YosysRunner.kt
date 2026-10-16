@@ -20,7 +20,7 @@ import java.nio.file.Path
 /** Runs Yosys on one module and streams its output into a tab of the Yosys tool window. */
 object YosysRunner {
     /** Must match the `toolWindow` id in plugin.xml. */
-    const val TOOL_WINDOW_ID = "Yosys"
+    private const val TOOL_WINDOW_ID = "Yosys"
 
     /** Call on the EDT. The process is started on a background thread. */
     fun run(project: Project, file: Path, top: String) {
