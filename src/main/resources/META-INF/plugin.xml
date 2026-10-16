@@ -22,6 +22,9 @@
         <colorSettingsPage implementation="dev.sal.hdl.verilog.VerilogColorSettingsPage"/>
         <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
         <lang.commenter language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogCommenter"/>
+        <!-- Structure tool window and File Structure popup: modules, ports, signals, processes, instances -->
+        <lang.psiStructureViewFactory language="HDL.Verilog"
+                                      implementationClass="dev.sal.hdl.verilog.VerilogStructureViewFactory"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -38,6 +41,9 @@
         <colorSettingsPage implementation="dev.sal.hdl.vhdl.VhdlColorSettingsPage"/>
         <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
         <lang.commenter language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlCommenter"/>
+        <!-- Structure tool window and File Structure popup: entities, architectures, ports, signals, processes -->
+        <lang.psiStructureViewFactory language="HDL.VHDL"
+                                      implementationClass="dev.sal.hdl.vhdl.VhdlStructureViewFactory"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 

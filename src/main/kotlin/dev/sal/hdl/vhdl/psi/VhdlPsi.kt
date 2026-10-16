@@ -13,6 +13,7 @@ import com.intellij.util.IncorrectOperationException
 import dev.sal.hdl.psi.HdlKeywordBlock
 import dev.sal.hdl.psi.HdlPsiUtil
 import dev.sal.hdl.psi.HdlPsiUtil.collapsedText
+import dev.sal.hdl.psi.HdlPsiUtil.presentation
 import javax.swing.Icon
 import dev.sal.hdl.vhdl.VhdlTokenTypes as T
 
@@ -39,12 +40,6 @@ private fun PsiElement.isName(): Boolean = elementType in NAMES
 private fun PsiElement.keywordText(): String? = if (isKeyword()) text.lowercase() else null
 
 private fun topLevel(element: PsiElement) = HdlPsiUtil.topLevelChildren(element, OPENERS, CLOSERS)
-
-private fun presentation(text: String?, location: String?, icon: Icon?): ItemPresentation = object : ItemPresentation {
-    override fun getPresentableText() = text
-    override fun getLocationString() = location
-    override fun getIcon(unused: Boolean) = icon
-}
 
 /** The label of a labelled statement: `tick` in `tick : process (clk)`. */
 private fun labelOf(element: PsiElement): PsiElement? {
@@ -187,9 +182,17 @@ class VhdlDeclaration(node: ASTNode) : ASTWrapperPsiElement(node), HdlKeywordBlo
             return tokens.takeWhile { it.text != ":" }.filter { it.isName() }
         }
 
-    /** The type of an object (`unsigned(7 downto 0)`), or the definition of a type (`(IDLE, BUSY, DONE)`). */
+    /** `record`, `units` or `protected`, for the types that have a body ending in `end`. */
+    private fun bodyKeyword(): PsiElement? = HdlPsiUtil.significantChildren(this)
+        .firstOrNull { it.keywordText() in setOf("record", "units", "protected") }
+
+    /**
+     * The type of an object (`unsigned(7 downto 0)`), or the definition of a type (`(IDLE, BUSY, DONE)`).
+     * A record, physical or protected type is described by its keyword alone.
+     */
     val typeText: String
         get() {
+            bodyKeyword()?.let { return it.text.lowercase() }
             val tokens = topLevel(this)
             val start = if (namesOneThing) {
                 tokens.firstOrNull { it.isKeyword("is") || it.text == ":" }
@@ -216,8 +219,7 @@ class VhdlDeclaration(node: ASTNode) : ASTWrapperPsiElement(node), HdlKeywordBlo
 
     /** Only record, physical and protected types have keyword markers: `record` ... `end record`. */
     override fun markerKeywords(): List<PsiElement> {
-        val body = HdlPsiUtil.significantChildren(this)
-            .firstOrNull { it.keywordText() in setOf("record", "units", "protected") }
+        val body = bodyKeyword()
         if (body == null || closingEnd(this) == null) return emptyList()
         // vhdlMarkers starts with the first keyword, `type`, which isn't part of the pair.
         return listOf(body) + vhdlMarkers(this, emptySet()).drop(1)

@@ -13,6 +13,7 @@ import com.intellij.util.IncorrectOperationException
 import dev.sal.hdl.psi.HdlKeywordBlock
 import dev.sal.hdl.psi.HdlPsiUtil
 import dev.sal.hdl.psi.HdlPsiUtil.collapsedText
+import dev.sal.hdl.psi.HdlPsiUtil.presentation
 import javax.swing.Icon
 import dev.sal.hdl.verilog.VerilogTokenTypes as T
 
@@ -32,12 +33,6 @@ private fun topLevel(element: PsiElement) = HdlPsiUtil.topLevelChildren(element,
 /** Direct keyword children whose text is in [words]. */
 private fun keywordChildren(element: PsiElement, words: Set<String>): List<PsiElement> =
     HdlPsiUtil.significantChildren(element).filter { it.isKeyword() && it.text in words }
-
-private fun presentation(text: String?, location: String?, icon: Icon?): ItemPresentation = object : ItemPresentation {
-    override fun getPresentableText() = text
-    override fun getLocationString() = location
-    override fun getIcon(unused: Boolean) = icon
-}
 
 /** Base class for named elements. Renaming isn't supported. */
 abstract class VerilogNamedElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiNameIdentifierOwner {
@@ -195,6 +190,9 @@ class VerilogInstance(node: ASTNode) : ASTWrapperPsiElement(node) {
 
     /** The instance names. One statement can create several: `inv a(...), b(...);` */
     val instanceNames: List<PsiElement> get() = topLevel(this).filter { it.isName() }
+
+    override fun getPresentation(): ItemPresentation =
+        presentation(instanceNames.joinToString(", ") { it.text }, unitReference?.text, AllIcons.Nodes.Plugin)
 }
 
 /** A design unit name used elsewhere: an instantiated module, a base class, or `pkg` in `pkg::name`. */
@@ -206,18 +204,40 @@ class VerilogUnitReference(node: ASTNode) : ASTWrapperPsiElement(node) {
 class VerilogProcess(node: ASTNode) : ASTWrapperPsiElement(node) {
     private val body: VerilogBlock? get() = findChildByClass(VerilogBlock::class.java)
 
-    /** `always_ff @(posedge clk)`: the keyword and its event control, on one line. */
+    /** The keyword and any timing controls after it: `always_ff @(posedge clk)`, `always #5`, `initial`. */
     val header: String
         get() {
-            val end = body?.textRange?.startOffset ?: textRange.endOffset
-            val firstLine = containingFile.text.substring(textRange.startOffset, end).lineSequence().first()
-            return HdlPsiUtil.abbreviate(firstLine.replace(Regex("\\s+"), " ").trim())
+            val children = HdlPsiUtil.significantChildren(this)
+            var end = 0 // Index just past the header.
+            if (children.firstOrNull()?.isKeyword() == true) end = 1
+            while (end < children.size && children[end].text in TIMING) {
+                end++
+                if (end < children.size && children[end].elementType in OPENERS) {
+                    var depth = 0
+                    do {
+                        when (children[end].elementType) {
+                            in OPENERS -> depth++
+                            in CLOSERS -> depth--
+                        }
+                        end++
+                    } while (end < children.size && depth > 0)
+                } else if (end < children.size) {
+                    end++ // @*, @ev, #5, #`DELAY
+                }
+            }
+            if (end == 0) return ""
+            val text = collapsedText(this, textRange.startOffset, children[end - 1].textRange.endOffset)
+            return HdlPsiUtil.abbreviate(text)
         }
 
     /** The label of the body: `seq` in `always_ff @(posedge clk) begin : seq`. */
     val label: String? get() = body?.label
 
     override fun getPresentation(): ItemPresentation = presentation(header, label, AllIcons.Nodes.Lambda)
+
+    private companion object {
+        val TIMING = setOf("@", "#", "##")
+    }
 }
 
 /** `function ... endfunction` or `task ... endtask` */
@@ -269,6 +289,12 @@ class VerilogBlock(node: ASTNode) : ASTWrapperPsiElement(node), HdlKeywordBlock 
     override fun markerKeywords(): List<PsiElement> = keywordChildren(this, MARKERS)
 
     override fun closingKeyword(): PsiElement? = keywordChildren(this, ENDS).lastOrNull()
+
+    /** Named blocks appear in the structure view: `g_lane` (begin), `cg` (covergroup). */
+    override fun getPresentation(): ItemPresentation {
+        val icon = if (node.elementType == VerilogElementTypes.CONSTRUCT) AllIcons.Nodes.Property else AllIcons.Nodes.Folder
+        return presentation(label ?: keyword, keyword, icon)
+    }
 
     private companion object {
         val ENDS = setOf(

@@ -1,11 +1,13 @@
 package dev.sal.hdl.psi
 
+import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiComment
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiWhiteSpace
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.elementType
+import javax.swing.Icon
 
 /** A construct that opens and closes with keywords, such as `begin`/`end` or `process`/`end process`. */
 interface HdlKeywordBlock : PsiElement {
@@ -57,6 +59,15 @@ object HdlPsiUtil {
     fun collapsedText(element: PsiElement, start: Int, end: Int): String {
         if (end <= start) return ""
         return element.containingFile.text.substring(start, end).replace(WHITESPACE, " ").trim()
+    }
+
+    /** A fixed presentation for structure view nodes and navigation popups. An empty location is hidden. */
+    fun presentation(text: String?, location: String?, icon: Icon?): ItemPresentation = object : ItemPresentation {
+        override fun getPresentableText() = text
+
+        override fun getLocationString() = location?.takeIf { it.isNotEmpty() }
+
+        override fun getIcon(unused: Boolean) = icon
     }
 
     /** Shortens [text] to [max] characters, ending with an ellipsis if it was cut. */
