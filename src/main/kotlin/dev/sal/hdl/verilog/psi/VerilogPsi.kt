@@ -38,6 +38,10 @@ private fun topLevel(element: PsiElement) = HdlPsiUtil.topLevelChildren(element,
 private fun keywordChildren(element: PsiElement, words: Set<String>): List<PsiElement> =
     HdlPsiUtil.significantChildren(element).filter { it.isKeyword() && it.text in words }
 
+/** The offset of the `;` that ends a module or function header, if there is one. */
+private fun headerSemicolon(element: PsiElement): Int? =
+    HdlPsiUtil.significantChildren(element).firstOrNull { it.elementType == T.SEMICOLON }?.textRange?.startOffset
+
 /** Base class for named elements. Renaming isn't supported. */
 abstract class VerilogNamedElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiNameIdentifierOwner {
     override fun getName(): String? = nameIdentifier?.text
@@ -96,6 +100,8 @@ class VerilogDesignUnit(node: ASTNode) : VerilogNamedElement(node), HdlKeywordBl
     override fun markerKeywords(): List<PsiElement> = keywordChildren(this, UNIT_MARKERS)
 
     override fun closingKeyword(): PsiElement? = keywordChildren(this, UNIT_ENDS).lastOrNull()
+
+    override fun headerEnd(): Int = headerSemicolon(this) ?: textRange.startOffset
 
     override fun getPresentation(): ItemPresentation = presentation(name, kind.keyword, kind.icon)
 
@@ -276,6 +282,8 @@ class VerilogSubprogram(node: ASTNode) : VerilogNamedElement(node), HdlKeywordBl
     override fun markerKeywords(): List<PsiElement> = keywordChildren(this, MARKERS)
 
     override fun closingKeyword(): PsiElement? = keywordChildren(this, setOf("endfunction", "endtask")).lastOrNull()
+
+    override fun headerEnd(): Int = headerSemicolon(this) ?: textRange.startOffset
 
     private val icon: Icon get() = if (isTask) AllIcons.Nodes.Method else AllIcons.Nodes.Function
 

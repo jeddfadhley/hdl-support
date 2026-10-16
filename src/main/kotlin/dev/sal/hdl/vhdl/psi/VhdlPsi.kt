@@ -81,6 +81,16 @@ private fun vhdlMarkers(element: PsiElement, middles: Set<String>): List<PsiElem
 private fun closingEnd(element: PsiElement): PsiElement? =
     HdlPsiUtil.significantChildren(element).lastOrNull { it.isKeyword("end") }
 
+/**
+ * Where a construct's header ends: its first `is`, `then`, `loop` or `generate`, as in
+ * `function f (...) return bit is` or `for i in 0 to 3 generate`. Otherwise its start.
+ */
+private fun vhdlHeaderEnd(element: PsiElement): Int =
+    HdlPsiUtil.significantChildren(element)
+        .firstOrNull { it.keywordText() in setOf("is", "then", "loop", "generate") }
+        ?.textRange?.startOffset
+        ?: element.textRange.startOffset
+
 /** Base class for named elements. Renaming isn't supported. */
 abstract class VhdlNamedElement(node: ASTNode) : ASTWrapperPsiElement(node), PsiNameIdentifierOwner {
     override fun getName(): String? = nameIdentifier?.text
@@ -126,6 +136,8 @@ class VhdlDesignUnit(node: ASTNode) : VhdlNamedElement(node), HdlKeywordBlock {
     override fun markerKeywords(): List<PsiElement> = vhdlMarkers(this, setOf("body", "begin"))
 
     override fun closingKeyword(): PsiElement? = closingEnd(this)
+
+    override fun headerEnd(): Int = vhdlHeaderEnd(this)
 
     /** `of Counter` for an architecture, otherwise the kind of unit. */
     val description: String
@@ -230,6 +242,8 @@ class VhdlDeclaration(node: ASTNode) : ASTWrapperPsiElement(node), HdlKeywordBlo
     }
 
     override fun closingKeyword(): PsiElement? = closingEnd(this)
+
+    override fun headerEnd(): Int = vhdlHeaderEnd(this)
 }
 
 /** `component c is generic (...); port (...); end component;` */
@@ -243,6 +257,8 @@ class VhdlComponent(node: ASTNode) : VhdlNamedElement(node), HdlKeywordBlock {
     override fun markerKeywords(): List<PsiElement> = vhdlMarkers(this, emptySet())
 
     override fun closingKeyword(): PsiElement? = closingEnd(this)
+
+    override fun headerEnd(): Int = vhdlHeaderEnd(this)
 
     override fun getPresentation(): ItemPresentation = presentation(name, "component", AllIcons.Nodes.Plugin)
 }
@@ -265,6 +281,8 @@ class VhdlSubprogram(node: ASTNode) : VhdlNamedElement(node), HdlKeywordBlock {
     override fun markerKeywords(): List<PsiElement> = vhdlMarkers(this, setOf("begin"))
 
     override fun closingKeyword(): PsiElement? = closingEnd(this)
+
+    override fun headerEnd(): Int = vhdlHeaderEnd(this)
 
     private val icon: Icon get() = if (isFunction) AllIcons.Nodes.Function else AllIcons.Nodes.Method
 
@@ -302,6 +320,8 @@ class VhdlStatement(node: ASTNode) : ASTWrapperPsiElement(node), HdlKeywordBlock
     override fun markerKeywords(): List<PsiElement> = vhdlMarkers(this, MIDDLES[node.elementType].orEmpty())
 
     override fun closingKeyword(): PsiElement? = closingEnd(this)
+
+    override fun headerEnd(): Int = vhdlHeaderEnd(this)
 
     val icon: Icon
         get() = when (node.elementType) {

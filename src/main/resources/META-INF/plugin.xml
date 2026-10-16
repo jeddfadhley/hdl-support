@@ -25,6 +25,8 @@
         <!-- Structure tool window and File Structure popup: modules, ports, signals, processes, instances -->
         <lang.psiStructureViewFactory language="HDL.Verilog"
                                       implementationClass="dev.sal.hdl.verilog.VerilogStructureViewFactory"/>
+        <!-- Folding for modules, begin/end and other keyword blocks, port lists and block comments -->
+        <lang.foldingBuilder language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogFoldingBuilder"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -44,6 +46,8 @@
         <!-- Structure tool window and File Structure popup: entities, architectures, ports, signals, processes -->
         <lang.psiStructureViewFactory language="HDL.VHDL"
                                       implementationClass="dev.sal.hdl.vhdl.VhdlStructureViewFactory"/>
+        <!-- Folding for design units, processes, generate and other keyword blocks, port clauses and block comments -->
+        <lang.foldingBuilder language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlFoldingBuilder"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 

@@ -16,6 +16,12 @@ interface HdlKeywordBlock : PsiElement {
 
     /** The keyword that closes the block (`end`, `endmodule`), or null if it's missing. */
     fun closingKeyword(): PsiElement?
+
+    /**
+     * Where the block's header ends, such as the `;` after a module's port list. Folding starts at
+     * the end of this line, so a folded block keeps its whole header visible.
+     */
+    fun headerEnd(): Int = textRange.startOffset
 }
 
 object HdlPsiUtil {
