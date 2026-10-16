@@ -27,6 +27,11 @@
                                       implementationClass="dev.sal.hdl.verilog.VerilogStructureViewFactory"/>
         <!-- Folding for modules, begin/end and other keyword blocks, port lists and block comments -->
         <lang.foldingBuilder language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogFoldingBuilder"/>
+        <!-- Highlights and jumps between matching (), [] and {} -->
+        <lang.braceMatcher language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogBraceMatcher"/>
+        <!-- Highlights and jumps between matching keywords: begin/end, module/endmodule, case/endcase, ... -->
+        <codeBlockSupportHandler language="HDL.Verilog"
+                                 implementationClass="dev.sal.hdl.editor.HdlCodeBlockSupportHandler"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -48,6 +53,11 @@
                                       implementationClass="dev.sal.hdl.vhdl.VhdlStructureViewFactory"/>
         <!-- Folding for design units, processes, generate and other keyword blocks, port clauses and block comments -->
         <lang.foldingBuilder language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlFoldingBuilder"/>
+        <!-- Highlights and jumps between matching () and [] -->
+        <lang.braceMatcher language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlBraceMatcher"/>
+        <!-- Highlights and jumps between matching keywords: process/end process, if/elsif/else/end if, ... -->
+        <codeBlockSupportHandler language="HDL.VHDL"
+                                 implementationClass="dev.sal.hdl.editor.HdlCodeBlockSupportHandler"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 
