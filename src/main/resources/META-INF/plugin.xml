@@ -5,6 +5,10 @@
     <vendor>Sal</vendor>
     <description><![CDATA[
         <p>Free Verilog, SystemVerilog and VHDL support for IntelliJ-based IDEs.</p>
+        <ul>
+            <li>Syntax highlighting that follows your colour scheme</li>
+            <li>Line and block commenting</li>
+        </ul>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -14,6 +18,16 @@
         <!-- File type for .v, .vh, .sv and .svh -->
         <fileType name="Verilog/SystemVerilog" implementationClass="dev.sal.hdl.verilog.VerilogFileType"
                   fieldName="INSTANCE" language="HDL.Verilog" extensions="v;vh;sv;svh"/>
+        <!-- Lexer plus a flat PSI tree, so commenters and annotators have something to run on -->
+        <lang.parserDefinition language="HDL.Verilog"
+                               implementationClass="dev.sal.hdl.verilog.VerilogParserDefinition"/>
+        <!-- Token-based syntax highlighting -->
+        <lang.syntaxHighlighterFactory language="HDL.Verilog"
+                                       implementationClass="dev.sal.hdl.verilog.VerilogSyntaxHighlighterFactory"/>
+        <!-- Settings | Editor | Color Scheme | Verilog/SystemVerilog -->
+        <colorSettingsPage implementation="dev.sal.hdl.verilog.VerilogColorSettingsPage"/>
+        <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
+        <lang.commenter language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogCommenter"/>
 
         <!-- ===== VHDL ===== -->
         <!-- File type for .vhd and .vhdl -->
