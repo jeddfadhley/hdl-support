@@ -85,3 +85,8 @@ intellijPlatform {
         }
     }
 }
+
+// Open the sample HDL files in the sandbox IDE, so there's something to look at straight away.
+tasks.runIde {
+    args(layout.projectDirectory.dir("src/test/testData").asFile.absolutePath)
+}
