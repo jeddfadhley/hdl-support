@@ -8,7 +8,9 @@
         <ul>
             <li>Syntax highlighting that follows your colour scheme</li>
             <li>Line and block commenting</li>
+            <li>Lint warnings and errors from Verilator (Verilog/SystemVerilog) and GHDL (VHDL), if installed</li>
         </ul>
+        <p>Configure the linters under <b>Settings | Tools | HDL Support</b>.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -28,6 +30,8 @@
         <colorSettingsPage implementation="dev.sal.hdl.verilog.VerilogColorSettingsPage"/>
         <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
         <lang.commenter language="HDL.Verilog" implementationClass="dev.sal.hdl.verilog.VerilogCommenter"/>
+        <!-- Verilator lint squiggles -->
+        <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
         <!-- ===== VHDL ===== -->
         <!-- File type for .vhd and .vhdl -->
@@ -42,5 +46,14 @@
         <colorSettingsPage implementation="dev.sal.hdl.vhdl.VhdlColorSettingsPage"/>
         <!-- Ctrl+/ and Ctrl+Shift+/ comment toggling -->
         <lang.commenter language="HDL.VHDL" implementationClass="dev.sal.hdl.vhdl.VhdlCommenter"/>
+        <!-- GHDL syntax-check squiggles -->
+        <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
+
+        <!-- ===== Shared ===== -->
+        <!-- Settings | Tools | HDL Support: tool paths, enable toggles, extra arguments -->
+        <applicationConfigurable parentId="tools" instance="dev.sal.hdl.settings.HdlSettingsConfigurable"
+                                 id="dev.sal.hdl.settings" displayName="HDL Support"/>
+        <!-- Balloon shown once per session when a lint tool can't be found -->
+        <notificationGroup id="HDL Support" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>
