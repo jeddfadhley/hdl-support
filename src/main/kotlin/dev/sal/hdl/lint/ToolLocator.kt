@@ -46,15 +46,35 @@ object ToolLocator {
     /** Shows the "tool not found" balloon once per session and stops further attempts. */
     fun reportMissing(project: Project, toolName: String, displayName: String, configuredPath: String) {
         if (!missing.add(toolName)) return
-        val where = if (configuredPath.isBlank()) "on PATH" else "at <code>${configuredPath.trim()}</code>"
+        showMissing(
+            project,
+            "$displayName not found",
+            "Couldn't find <code>$toolName</code> ${where(configuredPath)}, so $displayName lint is off for " +
+                "this session. Highlighting still works.",
+            NotificationType.INFORMATION,
+        )
+    }
+
+    /**
+     * Shows a "tool not found" balloon every time. For actions the user starts themselves, such as
+     * Show Synthesis Stats, where staying quiet would look like nothing happened.
+     */
+    fun reportMissingNow(project: Project, toolName: String, displayName: String, configuredPath: String) {
+        showMissing(
+            project,
+            "$displayName not found",
+            "Couldn't find <code>$toolName</code> ${where(configuredPath)}.",
+            NotificationType.WARNING,
+        )
+    }
+
+    private fun where(configuredPath: String): String =
+        if (configuredPath.isBlank()) "on PATH" else "at <code>${configuredPath.trim()}</code>"
+
+    private fun showMissing(project: Project, title: String, content: String, type: NotificationType) {
         NotificationGroupManager.getInstance()
             .getNotificationGroup(NOTIFICATION_GROUP)
-            .createNotification(
-                "$displayName not found",
-                "Couldn't find <code>$toolName</code> $where, so $displayName lint is off for this session. " +
-                    "Highlighting still works.",
-                NotificationType.INFORMATION,
-            )
+            .createNotification(title, content, type)
             .addAction(NotificationAction.createSimpleExpiring("Configure…") {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, HdlSettingsConfigurable::class.java)
             })

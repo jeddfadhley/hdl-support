@@ -23,7 +23,7 @@ class VerilatorAnnotator : HdlLintAnnotator() {
     override fun buildCommand(tool: Path, target: Path, original: Path, settings: HdlSettings.State) =
         GeneralCommandLine(tool.toString()).apply {
             addParameters("--lint-only", "-Wall")
-            for (dir in splitDirs(settings.verilatorIncludeDirs)) addParameter("-I$dir")
+            for (dir in HdlSettings.splitDirectories(settings.verilatorIncludeDirs)) addParameter("-I$dir")
             // Let Verilator find modules instantiated from sibling files.
             addParameters("-y", original.parent.toString())
             addParameters(ParametersListUtil.parse(settings.verilatorExtraArgs))
@@ -31,7 +31,4 @@ class VerilatorAnnotator : HdlLintAnnotator() {
         }
 
     override fun parseOutput(output: String) = VerilatorOutputParser.parse(output)
-
-    private fun splitDirs(dirs: String): List<String> =
-        dirs.split(';', '\n').map { it.trim() }.filter { it.isNotEmpty() }
 }

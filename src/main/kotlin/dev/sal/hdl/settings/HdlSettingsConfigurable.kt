@@ -33,7 +33,10 @@ class HdlSettingsConfigurable : BoundConfigurable("HDL Support") {
                 textField()
                     .bindText(settings::verilatorIncludeDirs)
                     .align(AlignX.FILL)
-                    .comment("Passed as <code>-I&lt;dir&gt;</code>. Separate directories with <code>;</code>.")
+                    .comment(
+                        "Passed as <code>-I&lt;dir&gt;</code> to Verilator and Yosys. " +
+                            "Separate directories with <code>;</code>.",
+                    )
             }
             row("Extra arguments:") {
                 textField()
@@ -62,6 +65,23 @@ class HdlSettingsConfigurable : BoundConfigurable("HDL Support") {
                     .bindText(settings::ghdlExtraArgs)
                     .align(AlignX.FILL)
                     .comment("Added after <code>-s --std=NN</code>, e.g. <code>-fsynopsys</code>.")
+            }
+        }
+        group("Yosys (Synthesis Stats)") {
+            row("Executable:") {
+                textFieldWithBrowseButton(executableChooser("Select Yosys Executable"))
+                    .bindText(settings::yosysPath)
+                    .align(AlignX.FILL)
+                    .comment("Leave blank to find <code>yosys</code> on PATH.")
+            }
+            row("Synthesis command:") {
+                textField()
+                    .bindText(settings::yosysSynthCommand)
+                    .align(AlignX.FILL)
+                    .comment(
+                        "Run with <code>-top &lt;module&gt;</code>, e.g. <code>synth</code>, " +
+                            "<code>synth_ice40</code> or <code>synth_xilinx</code>.",
+                    )
             }
         }
         group("General") {

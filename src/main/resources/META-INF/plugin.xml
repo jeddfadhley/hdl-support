@@ -69,5 +69,19 @@
                                  id="dev.sal.hdl.settings" displayName="HDL Support"/>
         <!-- Balloon shown once per session when a lint tool can't be found -->
         <notificationGroup id="HDL Support" displayType="BALLOON"/>
+        <!-- Output of Show Synthesis Stats, one tab per run; hidden until first used -->
+        <toolWindow id="Yosys" anchor="bottom" icon="AllIcons.Toolwindows.ToolWindowBuild" canCloseContents="true"
+                    doNotActivateOnStart="true" factoryClass="dev.sal.hdl.yosys.YosysToolWindowFactory"/>
     </extensions>
+
+    <actions>
+        <!-- Synthesises the module at the caret with Yosys and shows its cell counts -->
+        <action id="dev.sal.hdl.ShowSynthesisStats" class="dev.sal.hdl.yosys.ShowSynthesisStatsAction"
+                text="Show Synthesis Stats" icon="AllIcons.Actions.Execute"
+                description="Synthesise the Verilog module at the caret with Yosys and show its statistics">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

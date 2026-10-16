@@ -20,7 +20,7 @@ class HdlSettings : PersistentStateComponent<HdlSettings.State> {
         var verilatorEnabled: Boolean = true
         /** Blank means "find `verilator` on PATH". */
         var verilatorPath: String = ""
-        /** Include directories passed as `-I<dir>`, separated by `;` or newlines. */
+        /** Include directories passed as `-I<dir>` to Verilator and Yosys, separated by `;` or newlines. */
         var verilatorIncludeDirs: String = ""
         var verilatorExtraArgs: String = ""
 
@@ -30,6 +30,11 @@ class HdlSettings : PersistentStateComponent<HdlSettings.State> {
         /** `--std=` value: "08" or "93". */
         var ghdlStd: String = "08"
         var ghdlExtraArgs: String = ""
+
+        /** Blank means "find `yosys` on PATH". */
+        var yosysPath: String = ""
+        /** The Yosys synthesis command, e.g. `synth` or `synth_ice40`. It's given `-top <module>`. */
+        var yosysSynthCommand: String = "synth"
 
         /** How long one lint run may take before it's killed. */
         var timeoutSeconds: Int = 10
@@ -45,6 +50,10 @@ class HdlSettings : PersistentStateComponent<HdlSettings.State> {
 
     companion object {
         val GHDL_STANDARDS = listOf("08", "93")
+
+        /** Splits a list of directories separated by `;` or newlines, as typed in the settings. */
+        fun splitDirectories(text: String): List<String> =
+            text.split(';', '\n').map { it.trim() }.filter { it.isNotEmpty() }
 
         fun getInstance(): HdlSettings = ApplicationManager.getApplication().getService(HdlSettings::class.java)
     }
