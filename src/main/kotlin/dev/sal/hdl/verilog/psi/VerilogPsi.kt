@@ -6,14 +6,18 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiReference
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.util.IncorrectOperationException
+import dev.sal.hdl.navigation.HdlUnitReference
+import dev.sal.hdl.navigation.HdlUnits
 import dev.sal.hdl.psi.HdlKeywordBlock
 import dev.sal.hdl.psi.HdlPsiUtil
 import dev.sal.hdl.psi.HdlPsiUtil.collapsedText
 import dev.sal.hdl.psi.HdlPsiUtil.presentation
+import dev.sal.hdl.vhdl.psi.VhdlDesignUnit
 import javax.swing.Icon
 import dev.sal.hdl.verilog.VerilogTokenTypes as T
 
@@ -198,6 +202,25 @@ class VerilogInstance(node: ASTNode) : ASTWrapperPsiElement(node) {
 /** A design unit name used elsewhere: an instantiated module, a base class, or `pkg` in `pkg::name`. */
 class VerilogUnitReference(node: ASTNode) : ASTWrapperPsiElement(node) {
     override fun getName(): String = text
+
+    override fun getReference(): PsiReference = HdlUnitReference(this) { element ->
+        val units = HdlUnits.find(element, element.text)
+        // An instance prefers modules and other instantiable units; `pkg::` prefers packages and classes.
+        val preferred = if (element.parent is VerilogInstance) {
+            units.filter { it is VhdlDesignUnit || (it as VerilogDesignUnit).kind in INSTANTIABLE }
+        } else {
+            units.filter { it is VerilogDesignUnit && it.kind in SCOPES }
+        }
+        preferred.ifEmpty { units }
+    }
+
+    private companion object {
+        val INSTANTIABLE = setOf(
+            VerilogDesignUnit.Kind.MODULE, VerilogDesignUnit.Kind.INTERFACE, VerilogDesignUnit.Kind.PROGRAM,
+            VerilogDesignUnit.Kind.PRIMITIVE, VerilogDesignUnit.Kind.CHECKER,
+        )
+        val SCOPES = setOf(VerilogDesignUnit.Kind.PACKAGE, VerilogDesignUnit.Kind.CLASS)
+    }
 }
 
 /** `always`, `always_ff`, `always_comb`, `always_latch`, `initial` or `final`. */

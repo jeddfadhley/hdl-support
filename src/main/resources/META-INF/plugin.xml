@@ -48,6 +48,8 @@
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 
         <!-- ===== Shared ===== -->
+        <!-- Index of module, entity and package names, used by go-to-definition across files -->
+        <fileBasedIndex implementation="dev.sal.hdl.navigation.HdlUnitIndex"/>
         <!-- Settings | Tools | HDL Support: tool paths, enable toggles, extra arguments -->
         <applicationConfigurable parentId="tools" instance="dev.sal.hdl.settings.HdlSettingsConfigurable"
                                  id="dev.sal.hdl.settings" displayName="HDL Support"/>

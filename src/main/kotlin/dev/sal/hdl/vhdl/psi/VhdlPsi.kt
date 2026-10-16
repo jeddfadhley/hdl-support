@@ -6,14 +6,18 @@ import com.intellij.lang.ASTNode
 import com.intellij.navigation.ItemPresentation
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
+import com.intellij.psi.PsiReference
 import com.intellij.psi.tree.TokenSet
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.util.elementType
 import com.intellij.util.IncorrectOperationException
+import dev.sal.hdl.navigation.HdlUnitReference
+import dev.sal.hdl.navigation.HdlUnits
 import dev.sal.hdl.psi.HdlKeywordBlock
 import dev.sal.hdl.psi.HdlPsiUtil
 import dev.sal.hdl.psi.HdlPsiUtil.collapsedText
 import dev.sal.hdl.psi.HdlPsiUtil.presentation
+import dev.sal.hdl.verilog.psi.VerilogDesignUnit
 import javax.swing.Icon
 import dev.sal.hdl.vhdl.VhdlTokenTypes as T
 
@@ -337,4 +341,20 @@ class VhdlInstance(node: ASTNode) : VhdlNamedElement(node) {
 /** A design unit name used elsewhere: the entity of an architecture or instance, or a package in a use clause. */
 class VhdlUnitReference(node: ASTNode) : ASTWrapperPsiElement(node) {
     override fun getName(): String = text
+
+    override fun getReference(): PsiReference = HdlUnitReference(this) { element ->
+        val units = HdlUnits.find(element, element.text)
+        when (element.parent) {
+            // An instance can name a Verilog module too. If no entity exists, use the component declaration.
+            is VhdlInstance -> units.filter { it is VerilogDesignUnit || (it as VhdlDesignUnit).kind == VhdlDesignUnit.Kind.ENTITY }
+                .ifEmpty { localComponents(element) }
+            is VhdlDesignUnit -> units.filter { it is VhdlDesignUnit && it.kind == VhdlDesignUnit.Kind.ENTITY }
+            // A use clause names a package.
+            else -> units.filter { it is VhdlDesignUnit && it.kind == VhdlDesignUnit.Kind.PACKAGE }
+        }
+    }
+
+    private fun localComponents(element: PsiElement): List<PsiElement> =
+        PsiTreeUtil.findChildrenOfType(element.containingFile, VhdlComponent::class.java)
+            .filter { it.name.equals(element.text, ignoreCase = true) }
 }
