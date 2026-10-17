@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-17
+
 ### Added
 
 - Structure view for Verilog, SystemVerilog and VHDL: modules, entities, architectures and packages with their ports, parameters, signals, instances, processes, functions and named generate blocks
@@ -21,3 +23,7 @@
 - Verilator lint warnings and errors for Verilog/SystemVerilog files
 - GHDL syntax-check errors for VHDL files
 - Settings page under Settings | Tools | HDL Support for tool paths, enable toggles, extra arguments, include directories and the VHDL standard
+
+[Unreleased]: https://github.com/jeddfadhley/hdl-support/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jeddfadhley/hdl-support/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/jeddfadhley/hdl-support/commits/v0.1.0
