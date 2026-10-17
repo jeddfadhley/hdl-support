@@ -35,6 +35,8 @@
         <!-- Completion: keywords, declared names, modules, ports in instances, $system tasks, `directives -->
         <completion.contributor language="HDL.Verilog"
                                 implementationClass="dev.sal.hdl.completion.VerilogCompletionContributor"/>
+        <!-- Typing " inserts a pair of quotes; typing " before a closing quote steps over it -->
+        <lang.quoteHandler language="HDL.Verilog" implementationClass="dev.sal.hdl.editor.VerilogQuoteHandler"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -64,6 +66,8 @@
         <!-- Completion: keywords, standard types, declared names, entities and packages, ports, 'attributes -->
         <completion.contributor language="HDL.VHDL"
                                 implementationClass="dev.sal.hdl.completion.VhdlCompletionContributor"/>
+        <!-- Typing " inserts a pair of quotes, also after a bit-string base (x"); ' isn't paired -->
+        <lang.quoteHandler language="HDL.VHDL" implementationClass="dev.sal.hdl.editor.VhdlQuoteHandler"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 

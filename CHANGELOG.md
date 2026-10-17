@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Typing `"` inserts the closing quote, typing it again steps over the closing quote, and Backspace removes an empty pair, including after a VHDL bit-string base (`x"`)
+
 ## [0.2.0] - 2026-10-17
 
 ### Added
