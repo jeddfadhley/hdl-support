@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-17
+
 ### Added
 
 - Typing `"` inserts the closing quote, typing it again steps over the closing quote, and Backspace removes an empty pair, including after a VHDL bit-string base (`x"`)
@@ -29,6 +31,7 @@
 - GHDL syntax-check errors for VHDL files
 - Settings page under Settings | Tools | HDL Support for tool paths, enable toggles, extra arguments, include directories and the VHDL standard
 
-[Unreleased]: https://github.com/jeddfadhley/hdl-support/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/jeddfadhley/hdl-support/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jeddfadhley/hdl-support/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jeddfadhley/hdl-support/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/jeddfadhley/hdl-support/commits/v0.1.0
