@@ -32,6 +32,9 @@
         <!-- Highlights and jumps between matching keywords: begin/end, module/endmodule, case/endcase, ... -->
         <codeBlockSupportHandler language="HDL.Verilog"
                                  implementationClass="dev.sal.hdl.editor.HdlCodeBlockSupportHandler"/>
+        <!-- Completion: keywords, declared names, modules, ports in instances, $system tasks, `directives -->
+        <completion.contributor language="HDL.Verilog"
+                                implementationClass="dev.sal.hdl.completion.VerilogCompletionContributor"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -58,6 +61,9 @@
         <!-- Highlights and jumps between matching keywords: process/end process, if/elsif/else/end if, ... -->
         <codeBlockSupportHandler language="HDL.VHDL"
                                  implementationClass="dev.sal.hdl.editor.HdlCodeBlockSupportHandler"/>
+        <!-- Completion: keywords, standard types, declared names, entities and packages, ports, 'attributes -->
+        <completion.contributor language="HDL.VHDL"
+                                implementationClass="dev.sal.hdl.completion.VhdlCompletionContributor"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 

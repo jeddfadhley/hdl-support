@@ -65,6 +65,10 @@ This is a personal tool and a learning project. Prefer clear, well-commented cod
     │   │   │   └── HdlStructureView.kt    (shared structure view; each language supplies an HdlStructureSpec)
     │   │   ├── folding/
     │   │   │   └── HdlFoldingBuilder.kt   (shared folding over HdlKeywordBlock elements)
+    │   │   ├── completion/
+    │   │   │   ├── HdlCompletion.kt       (keyword lists, shared lookup helpers, design units from the index)
+    │   │   │   ├── VerilogCompletionContributor.kt
+    │   │   │   └── VhdlCompletionContributor.kt
     │   │   ├── editor/
     │   │   │   └── HdlCodeBlockSupportHandler.kt  (begin/end keyword matching for both languages)
     │   │   ├── navigation/
@@ -161,6 +165,7 @@ Work through these in order. Each milestone should build, pass its tests, and be
 - Brace matching for `()`/`[]`/`{}`, and keyword matching for `begin`/`end`, `module`/`endmodule`, `if`/`elsif`/`else`/`end if` and so on (`HdlCodeBlockSupportHandler`).
 - An outline parser with PSI, enabling a structure view (modules, ports, signals, always blocks, instances) and go-to-definition for module instantiations, architectures, imports and use clauses.
 - Code folding for modules, entities, `always`, `process`, `generate`, `begin`/`end` and other keyword blocks, port lists and block comments.
+- Code completion (`completion/`): keywords, names declared in the file, design units from `HdlUnitIndex`, the ports of the instantiated module/entity, Verilog `$` system tasks and `` ` `` directives/macros, VHDL standard types and `'` attributes. Nothing inside comments, strings or literals.
 - A Yosys action, **Tools → Show Synthesis Stats**: `yosys -p "read_verilog -sv <f>; hierarchy -check -top <m> -libdir .; synth -top <m>; stat"`, with the output in a Yosys tool window.
 
 ### Parsers
@@ -179,6 +184,7 @@ The parsers are hand-written `PsiBuilder` parsers (`VerilogParser.kt`, `VhdlPars
 | Run sandbox IDE with plugin | `./gradlew runIde` (opens a throwaway copy of the test data from `build/sample-project`) |
 | Run tests | `./gradlew test` |
 | Regenerate lexers | `./gradlew generateLexers` (runs `generateVerilogLexer` and `generateVhdlLexer`; output goes to `build/generated/lexer`. Compilation runs this automatically.) |
+| Regenerate keyword lists | `./gradlew generateKeywordLists` (extracts the keyword blocks from the `.flex` files into `build/generated/keywords` for completion; resources processing runs this automatically) |
 | Build installable zip | `./gradlew buildPlugin` → `build/distributions/*.zip` |
 | Verify plugin compatibility | `./gradlew verifyPlugin` |
 
@@ -219,14 +225,14 @@ The very first Marketplace upload must be done by hand on plugins.jetbrains.com.
   - Verilog escaped identifiers
   - sized numbers containing `x`/`z`/`_`
 - **Parser tests:** extend `HdlParsingTestCase`. File tests compare against `<name>.psi.txt` dumps next to the sample file; review a new dump by hand, as with lexer dumps. `assertTree` checks short snippets inline. Every recovery rule needs a test, and the parser must never produce a `PsiErrorElement` or lose text (both checked automatically).
-- **Feature tests:** `HdlStructureViewTest`, `HdlFoldingTest`, `HdlBraceMatchingTest` and `HdlNavigationTest` are fixture tests with the expected result written inline.
+- **Feature tests:** `HdlStructureViewTest`, `HdlFoldingTest`, `HdlBraceMatchingTest`, `HdlNavigationTest` and `HdlCompletionTest` are fixture tests with the expected result written inline.
 - **Annotator tests:** unit-test the output parsers against captured Verilator/GHDL output strings. Don't require the tools to be installed for `./gradlew test` to pass. `LintAnnotatorIntegrationTest` runs the real tools end to end and quietly passes when a tool is missing. `YosysTest` does the same for Yosys.
 
 ## Conventions
 
 - Kotlin, 4-space indent, no wildcard imports.
 - Keep generated lexer sources out of hand-edited directories. Generate them into `src/main/gen` (or the build dir) and don't edit them by hand.
-- Keep keyword lists in one place per language with a comment citing the standard (IEEE 1364-2005, 1800-2017, 1076-2008).
+- Keep keyword lists in one place per language with a comment citing the standard (IEEE 1364-2005, 1800-2017, 1076-2008). That place is the `.flex` file: completion reads the words between the `// ---- Keywords ----` and `// ---- End of keywords ----` markers, so keep those markers intact.
 - Every extension point registered in `plugin.xml` gets a one-line comment saying what it does.
 - Never block the UI thread. All process execution happens in `doAnnotate` or in background tasks.
 - Small, focused commits, one per milestone step.

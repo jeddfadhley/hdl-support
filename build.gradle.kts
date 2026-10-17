@@ -63,6 +63,64 @@ sourceSets {
 tasks.named("compileKotlin") { dependsOn(generateLexers) }
 tasks.named("compileJava") { dependsOn(generateLexers) }
 
+// ---- Keyword lists for completion ----
+// Completion reads its keywords from resources extracted from the .flex files, so each language keeps
+// one keyword list. A section is the quoted words between "// ---- <Section> ----" and
+// "// ---- End of <section> ----" (matched ignoring case).
+abstract class ExtractWordListTask : DefaultTask() {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sourceFile: RegularFileProperty
+
+    @get:Input
+    abstract val section: Property<String>
+
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
+
+    @TaskAction
+    fun extract() {
+        val lines = sourceFile.get().asFile.readLines().map { it.trim() }
+        val start = lines.indexOfFirst { it.equals("// ---- ${section.get()} ----", ignoreCase = true) }
+        val end = lines.indexOfFirst { it.equals("// ---- End of ${section.get()} ----", ignoreCase = true) }
+        if (start < 0 || end < start) throw GradleException("Section '${section.get()}' not found in ${sourceFile.get()}")
+        val words = lines.subList(start + 1, end)
+            .filterNot { it.startsWith("//") }
+            .flatMap { line -> Regex("\"([^\"]+)\"").findAll(line).map { it.groupValues[1] }.toList() }
+        if (words.isEmpty()) throw GradleException("Section '${section.get()}' in ${sourceFile.get()} is empty")
+        outputFile.get().asFile.writeText(words.distinct().sorted().joinToString("\n", postfix = "\n"))
+    }
+}
+
+val generatedKeywordDir = layout.buildDirectory.dir("generated/keywords")
+
+fun registerWordList(name: String, flex: String, section: String, output: String) =
+    tasks.register<ExtractWordListTask>(name) {
+        sourceFile = layout.projectDirectory.file("src/main/grammars/$flex")
+        this.section = section
+        outputFile = generatedKeywordDir.map { it.file("dev/sal/hdl/completion/$output") }
+    }
+
+val wordLists = listOf(
+    registerWordList("extractVerilogKeywords", "Verilog.flex", "Keywords", "verilog-keywords.txt"),
+    registerWordList("extractVhdlKeywords", "Vhdl.flex", "Keywords", "vhdl-keywords.txt"),
+    registerWordList("extractVhdlStdTypes", "Vhdl.flex", "Standard types", "vhdl-std-types.txt"),
+)
+
+val generateKeywordLists by tasks.registering {
+    group = "grammarkit"
+    description = "Extracts the keyword lists from the .flex files for completion."
+    dependsOn(wordLists)
+}
+
+sourceSets {
+    main {
+        resources.srcDir(generatedKeywordDir)
+    }
+}
+
+tasks.named("processResources") { dependsOn(generateKeywordLists) }
+
 dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.opentest4j:opentest4j:1.3.0")

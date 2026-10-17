@@ -10,6 +10,8 @@ and other IntelliJ-based IDEs.
 Free Verilog, SystemVerilog and VHDL support for IntelliJ-based IDEs.
 
 - Syntax highlighting for `.v`, `.vh`, `.sv`, `.svh`, `.vhd` and `.vhdl` files that follows your colour scheme
+- Code completion for keywords, signals, ports, modules and entities, Verilog system tasks and directives,
+  and VHDL types and attributes
 - Structure view of modules, entities, ports, signals, processes and instances
 - Go to definition from module and entity instances, architectures, imports and use clauses, across files
   and between Verilog and VHDL
