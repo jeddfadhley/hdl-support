@@ -70,7 +70,9 @@ This is a personal tool and a learning project. Prefer clear, well-commented cod
     │   │   │   ├── VerilogCompletionContributor.kt
     │   │   │   └── VhdlCompletionContributor.kt
     │   │   ├── editor/
-    │   │   │   └── HdlCodeBlockSupportHandler.kt  (begin/end keyword matching for both languages)
+    │   │   │   ├── HdlCodeBlockSupportHandler.kt  (begin/end keyword matching for both languages)
+    │   │   │   ├── HdlEnterHandler.kt     (Enter after a block opener adds the closer)
+    │   │   │   └── HdlBlockCloser.kt      (decides which closer, and whether the block is already closed)
     │   │   ├── navigation/
     │   │   │   ├── HdlUnitIndex.kt        (file-based index: design unit name → files)
     │   │   │   └── HdlUnits.kt            (unit lookup and HdlUnitReference for go-to-definition)
@@ -166,6 +168,7 @@ Work through these in order. Each milestone should build, pass its tests, and be
 - An outline parser with PSI, enabling a structure view (modules, ports, signals, always blocks, instances) and go-to-definition for module instantiations, architectures, imports and use clauses.
 - Code folding for modules, entities, `always`, `process`, `generate`, `begin`/`end` and other keyword blocks, port lists and block comments.
 - Code completion (`completion/`): keywords, names declared in the file, design units from `HdlUnitIndex`, the ports of the instantiated module/entity, Verilog `$` system tasks and `` ` `` directives/macros, VHDL standard types and `'` attributes. Nothing inside comments, strings or literals.
+- Closer insertion on Enter (`HdlEnterHandler`): `begin` → `end`, `module m;` → `endmodule`, `if ... then` → `end if;`, and so on, only if the block isn't closed yet. Verilog counts openers against closers in the file, since a new `begin` would otherwise borrow an enclosing `end`. VHDL asks the parser, but treats a bare `end` as not closing blocks whose `end` must name them (`end process`, `end if`, ...).
 - A Yosys action, **Tools → Show Synthesis Stats**: `yosys -p "read_verilog -sv <f>; hierarchy -check -top <m> -libdir .; synth -top <m>; stat"`, with the output in a Yosys tool window.
 
 ### Parsers
@@ -225,7 +228,7 @@ The very first Marketplace upload must be done by hand on plugins.jetbrains.com.
   - Verilog escaped identifiers
   - sized numbers containing `x`/`z`/`_`
 - **Parser tests:** extend `HdlParsingTestCase`. File tests compare against `<name>.psi.txt` dumps next to the sample file; review a new dump by hand, as with lexer dumps. `assertTree` checks short snippets inline. Every recovery rule needs a test, and the parser must never produce a `PsiErrorElement` or lose text (both checked automatically).
-- **Feature tests:** `HdlStructureViewTest`, `HdlFoldingTest`, `HdlBraceMatchingTest`, `HdlNavigationTest` and `HdlCompletionTest` are fixture tests with the expected result written inline.
+- **Feature tests:** `HdlStructureViewTest`, `HdlFoldingTest`, `HdlBraceMatchingTest`, `HdlNavigationTest`, `HdlCompletionTest` and `HdlEnterHandlerTest` are fixture tests with the expected result written inline.
 - **Annotator tests:** unit-test the output parsers against captured Verilator/GHDL output strings. Don't require the tools to be installed for `./gradlew test` to pass. `LintAnnotatorIntegrationTest` runs the real tools end to end and quietly passes when a tool is missing. `YosysTest` does the same for Yosys.
 
 ## Conventions

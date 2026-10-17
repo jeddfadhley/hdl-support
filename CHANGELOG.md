@@ -9,6 +9,7 @@
 - Code folding for modules, entities, processes, `always` blocks, `begin`/`end`, `case`, `generate`, functions, port lists and block comments
 - Matching of `()`, `[]` and `{}`, and of keyword pairs such as `begin`/`end`, `module`/`endmodule` and `if`/`elsif`/`else`/`end if`, including Move Caret to Matching Brace
 - Code completion: keywords, names declared in the file, modules, entities and packages from the whole project, the ports of the module or entity being instantiated, Verilog `$` system tasks, `` ` `` compiler directives and macros, VHDL standard types and `'` attributes
+- Pressing Enter after a line that opens a block adds its closer when it's missing: `begin` → `end`, `module m(...);` → `endmodule`, `case (x)` → `endcase`, `if ... then` → `end if;`, `p : process (clk)` → `end process p;` and so on
 - Tools | Show Synthesis Stats: synthesises the Verilog module at the caret with Yosys and shows the statistics in a Yosys tool window, with the Yosys path and synthesis command configurable in Settings | Tools | HDL Support
 
 ## [0.1.0] - 2026-10-16
