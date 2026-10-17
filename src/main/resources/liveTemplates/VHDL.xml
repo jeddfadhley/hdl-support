@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Live templates for VHDL. Users can override them in Settings | Editor | Live Templates. -->
+<templateSet group="VHDL">
+    <template name="lib" value="library ieee;&#10;use ieee.std_logic_1164.all;&#10;use ieee.numeric_std.all;&#10;$END$"
+              description="library ieee; use std_logic_1164 and numeric_std" toReformat="false" toShortenFQNames="false">
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="ent" value="entity $NAME$ is&#10;    port (&#10;        $PORTS$&#10;    );&#10;end entity $NAME$;"
+              description="entity ... end entity" toReformat="false" toShortenFQNames="false">
+        <variable name="NAME" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <variable name="PORTS" expression="" defaultValue='"clk : in std_logic"' alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="arch" value="architecture $ARCH$ of $ENTITY$ is&#10;begin&#10;    $END$&#10;end architecture $ARCH$;"
+              description="architecture ... end architecture" toReformat="false" toShortenFQNames="false">
+        <variable name="ARCH" expression="" defaultValue='"rtl"' alwaysStopAt="true"/>
+        <variable name="ENTITY" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="design" value="library ieee;&#10;use ieee.std_logic_1164.all;&#10;use ieee.numeric_std.all;&#10;&#10;entity $NAME$ is&#10;    port (&#10;        clk   : in  std_logic;&#10;        rst   : in  std_logic$PORTS$&#10;    );&#10;end entity $NAME$;&#10;&#10;architecture $ARCH$ of $NAME$ is&#10;begin&#10;    $END$&#10;end architecture $ARCH$;"
+              description="Libraries, entity and architecture for a new file" toReformat="false" toShortenFQNames="false">
+        <variable name="NAME" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <variable name="PORTS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="ARCH" expression="" defaultValue='"rtl"' alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="proc" value="process ($CLK$)&#10;begin&#10;    if rising_edge($CLK$) then&#10;        $END$&#10;    end if;&#10;end process;"
+              description="Clocked process" toReformat="false" toShortenFQNames="false">
+        <variable name="CLK" expression="" defaultValue='"clk"' alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="procr" value="process ($CLK$, $RST$)&#10;begin&#10;    if $RST$ = '1' then&#10;        $RESET$&#10;    elsif rising_edge($CLK$) then&#10;        $END$&#10;    end if;&#10;end process;"
+              description="Clocked process with asynchronous reset" toReformat="false" toShortenFQNames="false">
+        <variable name="CLK" expression="" defaultValue='"clk"' alwaysStopAt="true"/>
+        <variable name="RST" expression="" defaultValue='"rst"' alwaysStopAt="true"/>
+        <variable name="RESET" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="procc" value="process (all)&#10;begin&#10;    $END$&#10;end process;"
+              description="Combinational process (VHDL-2008)" toReformat="false" toShortenFQNames="false">
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="cas" value="case $EXPR$ is&#10;    when $VALUE$ =&gt;&#10;        $END$&#10;    when others =&gt;&#10;        null;&#10;end case;"
+              description="case ... when others" toReformat="false" toShortenFQNames="false">
+        <variable name="EXPR" expression="" defaultValue='"state"' alwaysStopAt="true"/>
+        <variable name="VALUE" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="genf" value="$LABEL$ : for $I$ in 0 to $N$ - 1 generate&#10;    $END$&#10;end generate $LABEL$;"
+              description="for ... generate" toReformat="false" toShortenFQNames="false">
+        <variable name="LABEL" expression="" defaultValue='"gen"' alwaysStopAt="true"/>
+        <variable name="I" expression="" defaultValue='"i"' alwaysStopAt="true"/>
+        <variable name="N" expression="" defaultValue='"N"' alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+    <template name="tb" value="library ieee;&#10;use ieee.std_logic_1164.all;&#10;&#10;entity $NAME$ is&#10;end entity $NAME$;&#10;&#10;architecture sim of $NAME$ is&#10;    signal clk : std_logic := '0';&#10;    signal rst : std_logic := '1';&#10;begin&#10;    clk &lt;= not clk after 5 ns;&#10;&#10;    dut : entity work.$DUT$&#10;        port map (&#10;            clk =&gt; clk,&#10;            rst =&gt; rst&#10;        );&#10;&#10;    stimulus : process&#10;    begin&#10;        wait for 20 ns;&#10;        rst &lt;= '0';&#10;        $END$&#10;        wait for 1 us;&#10;        std.env.finish;&#10;    end process stimulus;&#10;end architecture sim;"
+              description="Testbench with a clock and a reset" toReformat="false" toShortenFQNames="false">
+        <variable name="NAME" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <variable name="DUT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VHDL" value="true"/>
+        </context>
+    </template>
+</templateSet>

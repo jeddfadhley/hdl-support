@@ -37,6 +37,10 @@
                                 implementationClass="dev.sal.hdl.completion.VerilogCompletionContributor"/>
         <!-- Typing " inserts a pair of quotes; typing " before a closing quote steps over it -->
         <lang.quoteHandler language="HDL.Verilog" implementationClass="dev.sal.hdl.editor.VerilogQuoteHandler"/>
+        <!-- Live templates mod, aff, affr, acomb, cas, tb, ... from liveTemplates/Verilog.xml -->
+        <defaultLiveTemplates file="/liveTemplates/Verilog.xml"/>
+        <!-- Lets the Verilog templates expand in Verilog code, but not in comments or strings -->
+        <liveTemplateContext contextId="VERILOG" implementation="dev.sal.hdl.editor.VerilogTemplateContext"/>
         <!-- Verilator lint squiggles -->
         <externalAnnotator language="HDL.Verilog" implementationClass="dev.sal.hdl.lint.VerilatorAnnotator"/>
 
@@ -68,6 +72,10 @@
                                 implementationClass="dev.sal.hdl.completion.VhdlCompletionContributor"/>
         <!-- Typing " inserts a pair of quotes, also after a bit-string base (x"); ' isn't paired -->
         <lang.quoteHandler language="HDL.VHDL" implementationClass="dev.sal.hdl.editor.VhdlQuoteHandler"/>
+        <!-- Live templates lib, ent, arch, design, proc, procr, cas, tb, ... from liveTemplates/VHDL.xml -->
+        <defaultLiveTemplates file="/liveTemplates/VHDL.xml"/>
+        <!-- Lets the VHDL templates expand in VHDL code, but not in comments or strings -->
+        <liveTemplateContext contextId="VHDL" implementation="dev.sal.hdl.editor.VhdlTemplateContext"/>
         <!-- GHDL syntax-check squiggles -->
         <externalAnnotator language="HDL.VHDL" implementationClass="dev.sal.hdl.lint.GhdlAnnotator"/>
 

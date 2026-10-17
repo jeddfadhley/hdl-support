@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Live templates for Verilog/SystemVerilog. Users can override them in Settings | Editor | Live Templates. -->
+<templateSet group="Verilog/SystemVerilog">
+    <template name="mod" value="module $NAME$ (&#10;    $PORTS$&#10;);&#10;    $END$&#10;endmodule"
+              description="module ... endmodule" toReformat="false" toShortenFQNames="false">
+        <variable name="NAME" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <variable name="PORTS" expression="" defaultValue='"input wire clk"' alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="aff" value="always_ff @(posedge $CLK$) begin&#10;    $END$&#10;end"
+              description="always_ff @(posedge clk)" toReformat="false" toShortenFQNames="false">
+        <variable name="CLK" expression="" defaultValue='"clk"' alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="affr" value="always_ff @(posedge $CLK$ or negedge $RST$) begin&#10;    if (!$RST$) begin&#10;        $RESET$&#10;    end else begin&#10;        $END$&#10;    end&#10;end"
+              description="always_ff with asynchronous active-low reset" toReformat="false" toShortenFQNames="false">
+        <variable name="CLK" expression="" defaultValue='"clk"' alwaysStopAt="true"/>
+        <variable name="RST" expression="" defaultValue='"rst_n"' alwaysStopAt="true"/>
+        <variable name="RESET" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="acomb" value="always_comb begin&#10;    $END$&#10;end"
+              description="always_comb" toReformat="false" toShortenFQNames="false">
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="alw" value="always @(posedge $CLK$) begin&#10;    $END$&#10;end"
+              description="always @(posedge clk) (Verilog-2001)" toReformat="false" toShortenFQNames="false">
+        <variable name="CLK" expression="" defaultValue='"clk"' alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="alwc" value="always @(*) begin&#10;    $END$&#10;end"
+              description="always @(*) (Verilog-2001)" toReformat="false" toShortenFQNames="false">
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="init" value="initial begin&#10;    $END$&#10;end"
+              description="initial begin ... end" toReformat="false" toShortenFQNames="false">
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="cas" value="case ($EXPR$)&#10;    $VALUE$: $END$&#10;    default: ;&#10;endcase"
+              description="case ... endcase with a default" toReformat="false" toShortenFQNames="false">
+        <variable name="EXPR" expression="" defaultValue='"state"' alwaysStopAt="true"/>
+        <variable name="VALUE" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="genf" value="genvar $I$;&#10;generate&#10;    for ($I$ = 0; $I$ &lt; $N$; $I$ = $I$ + 1) begin : $LABEL$&#10;        $END$&#10;    end&#10;endgenerate"
+              description="generate for loop" toReformat="false" toShortenFQNames="false">
+        <variable name="I" expression="" defaultValue='"i"' alwaysStopAt="true"/>
+        <variable name="N" expression="" defaultValue='"N"' alwaysStopAt="true"/>
+        <variable name="LABEL" expression="" defaultValue='"gen"' alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="func" value="function $TYPE$ $NAME$($ARGS$);&#10;    $END$&#10;endfunction"
+              description="function ... endfunction" toReformat="false" toShortenFQNames="false">
+        <variable name="TYPE" expression="" defaultValue='"logic"' alwaysStopAt="true"/>
+        <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true"/>
+        <variable name="ARGS" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+    <template name="tb" value='`timescale 1ns / 1ps&#10;&#10;module $NAME$;&#10;    logic clk = 0;&#10;    logic rst_n = 0;&#10;&#10;    always #5 clk = ~clk;&#10;&#10;    $DUT$ dut (&#10;        .clk(clk),&#10;        .rst_n(rst_n)&#10;    );&#10;&#10;    initial begin&#10;        $$dumpfile("$NAME$.vcd");&#10;        $$dumpvars(0, $NAME$);&#10;        #20 rst_n = 1;&#10;        $END$&#10;        #1000 $$finish;&#10;    end&#10;endmodule'
+              description="Testbench with a clock, a reset and a waveform dump" toReformat="false" toShortenFQNames="false">
+        <variable name="NAME" expression="fileNameWithoutExtension()" defaultValue="" alwaysStopAt="true"/>
+        <variable name="DUT" expression="" defaultValue="" alwaysStopAt="true"/>
+        <context>
+            <option name="VERILOG" value="true"/>
+        </context>
+    </template>
+</templateSet>

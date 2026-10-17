@@ -18,6 +18,8 @@ Free Verilog, SystemVerilog and VHDL support for IntelliJ-based IDEs.
 - Code folding, and matching of brackets and of keyword pairs such as `begin`/`end` and `if`/`end if`
 - The closing `end`, `endmodule`, `end if;` or `end process;` is added when you press Enter after opening a block
 - Automatic closing quotes
+- Live templates for modules, clocked and combinational blocks, `case`, generate loops, entities,
+  architectures, processes and testbenches: type `aff`, `proc`, `tb`, ... and press Tab
 - Line and block commenting with Ctrl+/ and Ctrl+Shift+/
 - Lint warnings and errors from [Verilator](https://www.veripool.org/verilator/) (Verilog/SystemVerilog)
   and [GHDL](https://github.com/ghdl/ghdl) (VHDL), if you have them installed

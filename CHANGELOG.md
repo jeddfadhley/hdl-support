@@ -5,6 +5,7 @@
 ### Added
 
 - Typing `"` inserts the closing quote, typing it again steps over the closing quote, and Backspace removes an empty pair, including after a VHDL bit-string base (`x"`)
+- Live templates, expanded with Tab: `mod`, `aff`, `affr`, `acomb`, `alw`, `alwc`, `init`, `cas`, `genf`, `func` and `tb` for Verilog/SystemVerilog, and `lib`, `ent`, `arch`, `design`, `proc`, `procr`, `procc`, `cas`, `genf` and `tb` for VHDL. Edit them under Settings | Editor | Live Templates
 
 ## [0.2.0] - 2026-10-17
 
